@@ -1,14 +1,21 @@
-import { insertProductSchema } from '@/lib/validators'
-import {z} from 'zod'
-
-
-export type Product = z.infer<typeof insertProductSchema> & {
-    id:string;
-    rating:number;
-    createdAt:Date
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  images: string[];
+  brand: string;
+  description: string;
+  stock: number;
+  price: number | string;
+  rating: number;
+  numReviews: number;
+  isFeatured: boolean;
+  banner: string | null;
+  createdAt: Date;
 }
 
-export function formatNumberWithDecimal(num:string):string{
-    const [int,decimal] = num.toString().split('.')
-    return decimal ? `${int}.${decimal.padEnd(2,'0')}`
+export function formatNumberWithDecimal(num: number): string {
+  const [int, decimal] = num.toString().split('.');
+  return decimal ? `${int}.${decimal.padEnd(2, '0')}` : `${int}.00`;
 }

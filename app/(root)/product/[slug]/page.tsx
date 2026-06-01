@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getProductBySlug } from '@/lib/actions/product.actions';
 import { notFound } from 'next/navigation';
 import ProductPrice from '@/components/shared/product/product-price';
+import ProductImages from '@/components/shared/header/product-images';
 
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
@@ -25,7 +26,9 @@ const ProductDetailsPage = async (props: {
             <Card className='overflow-hidden border-slate-100 shadow-sm'>
               <CardContent className='p-4 flex items-center justify-center min-h-[300px] bg-slate-50/50'>
                 {/* در آینده کامپوننت پوستر یا اسلایدر تصاویر اینجا قرار می‌گیرد */}
-                <span className='text-sm text-slate-400'>تصویر محصول</span>
+                <div className='text-sm text-slate-400'>
+                  <ProductImages images={product.images}/>
+                </div>
               </CardContent>
             </Card>
           </div>
