@@ -25,7 +25,6 @@ const ProductDetailsPage = async (props: {
           <div className='col-span-1 md:col-span-2'>
             <Card className='overflow-hidden border-slate-100 shadow-sm'>
               <CardContent className='p-4 flex items-center justify-center min-h-[300px] bg-slate-50/50'>
-                {/* در آینده کامپوننت پوستر یا اسلایدر تصاویر اینجا قرار می‌گیرد */}
                 <div className='text-sm text-slate-400'>
                   <ProductImages images={product.images}/>
                 </div>
