@@ -3,14 +3,18 @@ import sampleData from './sample-data';
 
 async function main() {
     console.log('Clearing existing products...');
-    // حذف محصولات قبلی
+    
+    // کدهای پاک‌سازی مطابق با عکس شما
     await prisma.product.deleteMany();
+    await prisma.account.deleteMany();
+    await prisma.session.deleteMany();
+    await prisma.verificationToken.deleteMany();
+    await prisma.user.deleteMany();
     
     console.log('Inserting sample products...');
-    // ایجاد محصولات جدید از sampleData
-    await prisma.product.createMany({ 
-        data: sampleData.products 
-    });
+    
+    await prisma.product.createMany({ data: sampleData.products });
+    await prisma.user.createMany({ data: sampleData.users });
     
     console.log('Database seeded successfully!');
 }
