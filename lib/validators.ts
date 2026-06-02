@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { email, z } from 'zod'
 
 const currency = z.string().refine(
     (value) => /^\d+(\.\d{2})?$/.test(value),
@@ -16,4 +16,11 @@ export const insertProductSchema = z.object({
     isFeatured: z.boolean(),
     banner: z.string().nullable(),
     price: currency
+});
+
+
+// طرح اعتبارسنجی برای ورود کاربران
+export const signInFormSchema = z.object({
+  email: z.string().email('آدرس ایمیل نامعتبر است'),
+  password: z.string().min(6, 'رمز عبور باید حداقل ۶ کاراکتر باشد'),
 });
