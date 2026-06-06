@@ -12,9 +12,10 @@ export const config = {
     },
     session: {
         strategy: 'jwt' as const,
-        maxAge: 60 * 60 * 24 * 30, // 30 days
+        maxAge: 60 * 60 * 24 * 30,
     },
     adapter: PrismaAdapter(prisma),
+    secret: process.env.NEXTAUTH_SECRET,  // ✅ این خط رو اضافه کن
     providers: [
         Credentials({
             name: "Credentials",

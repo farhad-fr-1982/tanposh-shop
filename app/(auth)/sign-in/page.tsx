@@ -14,13 +14,13 @@ export const metadata: Metadata = {
 
 const SignInPage = async (props: {
   searchParams: Promise<{
-    callbackUrl: string
+    callbackUrl?: string  // ✅ اضافه کردن ? برای اختیاری
   }>
 }) => {
   const { callbackUrl } = await props.searchParams
   const session = await auth()
 
-  if (session && Object.keys(session).length > 0) {
+  if (session && session.user) {
     return redirect(callbackUrl || '/')
   }
 
@@ -36,7 +36,7 @@ const SignInPage = async (props: {
             ورود به حساب کاربری
           </CardDescription>
           <CardContent>
-            <CredentialsSigninForm callbackUrl={callbackUrl} />
+            <CredentialsSigninForm callbackUrl={callbackUrl || '/'} />  {/* ✅ مقدار پیش‌فرض */}
           </CardContent>
         </CardHeader>
       </Card>

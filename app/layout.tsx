@@ -4,8 +4,8 @@ import "@/assets/styles/globals.css";
 import { cn } from "@/lib/utils";
 import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from "@/lib/constants";
 import { ThemeProvider } from "next-themes";
+import { SessionProvider } from "next-auth/react";  // ← اضافه شد
 
-// ۱. تنظیم فونت زیبای وزیر برای کل پروژه
 const vazirmatn = Vazirmatn({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "700"],
@@ -31,7 +31,9 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" className={vazirmatn.variable} suppressHydrationWarning>
       <body className={cn(vazirmatn.className, "antialiased")}>
         <ThemeProvider attribute='class' defaultTheme="light" enableSystem disableTransitionOnChange>
-          {children}
+          <SessionProvider>  {/* ← این خط اضافه شد */}
+            {children}
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

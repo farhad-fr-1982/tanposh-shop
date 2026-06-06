@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { EllipsisVertical, ShoppingCart, UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import UserButton from './user-button'
 
 const Menu = () => {
   return (
@@ -21,11 +22,7 @@ const Menu = () => {
           </Link>
         </Button>
         
-        <Button asChild className="flex items-center gap-1.5">
-          <Link href='/sign-in'>
-            <UserIcon className="size-5" /> ورود
-          </Link>
-        </Button>
+       <UserButton/>
       </nav>
 
       {/* 📱 منوی حالت موبایل (صفحات کوچک) */}
@@ -57,12 +54,7 @@ const Menu = () => {
               </Link>
             </Button>
 
-            <Button asChild className="w-full justify-start gap-3 text-right">
-              <Link href='/sign-in'>
-                <UserIcon className="size-5" /> 
-                <span>ورود به حساب</span>
-              </Link>
-            </Button>
+            <UserButton/>
 
             <SheetDescription className="hidden"></SheetDescription>
           </SheetContent>
