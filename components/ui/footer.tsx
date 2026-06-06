@@ -7,7 +7,7 @@ const Footer = () => {
   return (
     <footer className='border-t'>
       <div className="p-5 flex-center" dir="rtl">
-        {currentYearShamsi} {APP_NAME}. تمام حقوق این سایت محفوظ است.
+        {currentYearShamsi} {APP_NAME} تمام حقوق این سایت متعلق به شرکت تنپوشان است
       </div>
     </footer>
   )
