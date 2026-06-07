@@ -21,6 +21,16 @@ export const insertProductSchema = z.object({
 
 // طرح اعتبارسنجی برای ورود کاربران
 export const signInFormSchema = z.object({
-  email: z.string().email('آدرس ایمیل نامعتبر است'),
-  password: z.string().min(6, 'رمز عبور باید حداقل ۶ کاراکتر باشد'),
+    email: z.string().email('آدرس ایمیل نامعتبر است'),
+    password: z.string().min(6, 'کلمه عبور باید حداقل ۶ کاراکتر باشد'),
+});
+
+export const signIUpFormSchema = z.object({
+    name: z.string().min(3, 'نام باید حداقل شامل 3 کاراکتر باشد'),
+    email: z.string().email('آدرس ایمیل نامعتبر است'),
+    password: z.string().min(6, 'کلمه عبور باید حداقل ۶ کاراکتر باشد'),
+    confirmPassword: z.string().min(6, 'تکرار کلمه عبور باید حداقل ۶ کاراکتر باشد'),
+}).refine((data)=>data.password === data.confirmPassword,{
+    message:'کلمه عبور و تکرار کلمه عبور یکسان نمی باشند',
+    path:['confirmPassword']
 });
