@@ -12,10 +12,10 @@ export const config = {
     },
     session: {
         strategy: 'jwt' as const,
-        maxAge: 60 * 60 * 24 * 30,
+        maxAge: 60 * 60 * 24 * 30, // 30 days
     },
     adapter: PrismaAdapter(prisma),
-    secret: process.env.NEXTAUTH_SECRET,  // ✅ این خط رو اضافه کن
+    secret: process.env.NEXTAUTH_SECRET,
     providers: [
         Credentials({
             name: "Credentials",
@@ -35,7 +35,7 @@ export const config = {
                 });
 
                 if (user && user.password) {
-                    const isMatch = compareSync(credentials.password as string, user.password)
+                    const isMatch = compareSync(credentials.password as string, user.password);
 
                     if (isMatch) {
                         return {
@@ -43,7 +43,7 @@ export const config = {
                             name: user.name,
                             email: user.email,
                             role: user.role
-                        }
+                        };
                     }
                 }
                 return null;
@@ -51,16 +51,39 @@ export const config = {
         })
     ],
     callbacks: {
-        async session({ session, user, trigger, token }: any) {
-            session.user.id = token.sub
-
-            if(trigger === 'update'){
-                session.user.name = user.name
+        async jwt({ token, user, trigger, session }: any) {
+            // ۱. در اولین لاگین، اطلاعات کاربر را به توکن منتقل می‌کنیم
+            if (user) {
+                token.id = user.id;
+                token.role = user.role;
+                
+                // بررسی نام و آپدیت آن در دیتابیس در صورت نیاز
+                if (user.name === 'No_NAME' && user.email) {
+                    token.name = user.email.split('@')[0];
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { name: token.name }
+                    });
+                }
             }
 
-            return session
+            // ۲. مدیریت آپدیت سشن (زمانی که با ()update در فرانت‌اند صدا زده می‌شود)
+            if (trigger === 'update' && session?.name) {
+                token.name = session.name;
+            }
+
+            return token;
+        },
+        async session({ session, token }: any) {
+            // انتقال اطلاعات از توکن به سشن برای دسترسی در فرانت‌اند
+            if (session.user && token) {
+                session.user.id = token.id || token.sub;
+                session.user.role = token.role;
+                session.user.name = token.name;
+            }
+            return session;
         }
     }
-} satisfies NextAuthConfig; 
+} satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
