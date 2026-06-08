@@ -4,6 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import { prisma } from './db/prisma';
 import { compareSync } from 'bcrypt-ts-edge';
 import type { NextAuthConfig } from 'next-auth';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 export const config = {
     pages: {
@@ -56,7 +58,7 @@ export const config = {
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
-                
+
                 // بررسی نام و آپدیت آن در دیتابیس در صورت نیاز
                 if (user.name === 'No_NAME' && user.email) {
                     token.name = user.email.split('@')[0];
@@ -82,6 +84,30 @@ export const config = {
                 session.user.name = token.name;
             }
             return session;
+        },
+        authorized({ request, auth }: any) {
+            // اگر کوکی sessionCartId وجود نداشت
+            if (!request.cookies.get('sessionCartId')) {
+                // یه شناسه یکتا جدید بساز
+                const sessionCartId = crypto.randomUUID()
+
+                // یه پاسخ جدید بساز
+                const response = NextResponse.next()
+
+                // کوکی رو به response اضافه کن
+                response.cookies.set('sessionCartId', sessionCartId, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 30 // 30 روز
+                })
+
+                // ✅ مهم: پاسخ رو برگردون
+                return response
+            }
+
+            // اگه کوکی وجود داشت، اجازه بده ادامه بده
+            return true
         }
     }
 } satisfies NextAuthConfig;
