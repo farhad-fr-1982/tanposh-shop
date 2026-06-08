@@ -1,10 +1,12 @@
-import { email, z } from 'zod'
+import { z } from 'zod'
 
+// قیمت با دو رقم اعشار
 const currency = z.string().refine(
     (value) => /^\d+(\.\d{2})?$/.test(value),
     'قیمت باید دقیقاً دو رقم اعشار داشته باشد'
 )
 
+// طرح اعتبارسنجی محصول
 export const insertProductSchema = z.object({
     name: z.string().min(3, 'نام باید حداقل ۳ کاراکتر باشد'),
     slug: z.string().min(3, 'اسلاگ باید حداقل ۳ کاراکتر باشد'),
@@ -18,19 +20,40 @@ export const insertProductSchema = z.object({
     price: currency
 });
 
-
 // طرح اعتبارسنجی برای ورود کاربران
 export const signInFormSchema = z.object({
     email: z.string().email('آدرس ایمیل نامعتبر است'),
     password: z.string().min(6, 'کلمه عبور باید حداقل ۶ کاراکتر باشد'),
 });
 
+// طرح اعتبارسنجی برای ثبت نام کاربران
 export const signIUpFormSchema = z.object({
     name: z.string().min(3, 'نام باید حداقل شامل 3 کاراکتر باشد'),
     email: z.string().email('آدرس ایمیل نامعتبر است'),
     password: z.string().min(6, 'کلمه عبور باید حداقل ۶ کاراکتر باشد'),
     confirmPassword: z.string().min(6, 'تکرار کلمه عبور باید حداقل ۶ کاراکتر باشد'),
-}).refine((data)=>data.password === data.confirmPassword,{
-    message:'کلمه عبور و تکرار کلمه عبور یکسان نمی باشند',
-    path:['confirmPassword']
+}).refine((data) => data.password === data.confirmPassword, {
+    message: 'کلمه عبور و تکرار کلمه عبور یکسان نمی باشند',
+    path: ['confirmPassword']
+});
+
+// طرح اعتبارسنجی آیتم سبد خرید
+export const cartItemSchema = z.object({
+    productId: z.string().min(1, 'شناسه محصول الزامی است'),
+    name: z.string().min(1, 'نام محصول الزامی است'),
+    slug: z.string().min(1, 'اسلاگ محصول الزامی است'),
+    qty: z.number().int().nonnegative('تعداد باید عددی مثبت باشد'),
+    image: z.string().min(1, 'تصویر محصول الزامی است'),
+    price: currency
+});
+
+// طرح اعتبارسنجی سبد خرید
+export const insertCartSchema = z.object({
+    items: z.array(cartItemSchema),
+    itemsPrice: currency,
+    totalPrice: currency,
+    shippingPrice: currency,
+    taxPrice: currency,
+    sessionCartId: z.string().min(1, 'شناسه جلسه سبد خرید الزامی است'),
+    userId: z.string().optional().nullable(),
 });

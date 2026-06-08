@@ -4,7 +4,8 @@ import "@/assets/styles/globals.css";
 import { cn } from "@/lib/utils";
 import { APP_DESCRIPTION, APP_NAME, SERVER_URL } from "@/lib/constants";
 import { ThemeProvider } from "next-themes";
-import { SessionProvider } from "next-auth/react";  // ← اضافه شد
+import { SessionProvider } from "next-auth/react"; 
+import { Toaster } from "@/components/ui/sonner";
 
 const vazirmatn = Vazirmatn({
   subsets: ["arabic", "latin"],
@@ -31,8 +32,9 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" className={vazirmatn.variable} suppressHydrationWarning>
       <body className={cn(vazirmatn.className, "antialiased")}>
         <ThemeProvider attribute='class' defaultTheme="light" enableSystem disableTransitionOnChange>
-          <SessionProvider>  {/* ← این خط اضافه شد */}
+          <SessionProvider>
             {children}
+            <Toaster />
           </SessionProvider>
         </ThemeProvider>
       </body>

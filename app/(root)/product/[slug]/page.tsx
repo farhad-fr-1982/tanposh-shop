@@ -5,6 +5,7 @@ import { getProductBySlug } from '@/lib/actions/product.actions';
 import { notFound } from 'next/navigation';
 import ProductPrice from '@/components/shared/product/product-price';
 import ProductImages from '@/components/shared/header/product-images';
+import AddToCart from '@/components/shared/product/add-to-cart';
 
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
@@ -20,13 +21,13 @@ const ProductDetailsPage = async (props: {
     <>
       <section className='p-5' dir='rtl'>
         <div className='grid grid-cols-1 md:grid-cols-5 gap-6'>
-          
+
           {/* ستون اول: تصاویر محصول (اشغال ۲ ستون از ۵ ستون) */}
           <div className='col-span-1 md:col-span-2'>
             <Card className='overflow-hidden border-slate-100 shadow-sm'>
               <CardContent className='p-4 flex items-center justify-center min-h-[300px] bg-slate-50/50'>
                 <div className='text-sm text-slate-400'>
-                  <ProductImages images={product.images}/>
+                  <ProductImages images={product.images} />
                 </div>
               </CardContent>
             </Card>
@@ -36,12 +37,12 @@ const ProductDetailsPage = async (props: {
           <div className='col-span-1 md:col-span-2 flex flex-col gap-3 p-2'>
             <p className='text-xs font-semibold text-slate-400 tracking-wider'>{product.brand}</p>
             <h1 className='text-2xl font-bold text-slate-800 mb-2'>{product.name}</h1>
-            
+
             <div className='flex items-center gap-3 border-y border-slate-100 py-3 my-2'>
               <span className='text-sm text-slate-500'>قیمت محصول:</span>
-              <ProductPrice 
-                value={Number(product.price)} 
-                className='text-xl font-bold text-slate-900' 
+              <ProductPrice
+                value={Number(product.price)}
+                className='text-xl font-bold text-slate-900'
               />
             </div>
 
@@ -55,7 +56,7 @@ const ProductDetailsPage = async (props: {
           <div className='col-span-1'>
             <Card className='border-slate-100 shadow-sm sticky top-5'>
               <CardContent className='p-4 space-y-4'>
-                
+
                 {/* وضعیت موجودی */}
                 <div className='flex justify-between items-center text-sm'>
                   <div className='font-medium text-slate-600'>وضعیت انبار</div>
@@ -73,9 +74,16 @@ const ProductDetailsPage = async (props: {
                 {/* دکمه افزودن به سبد خرید */}
                 {product.stock > 0 && (
                   <div className='pt-2'>
-                    <Button className='w-full text-sm font-semibold py-5 bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/10 transition-all active:scale-[0.98]'>
-                      افزودن به سبد خرید
-                    </Button>
+                    <AddToCart
+                      item={{
+                        productId: product.id,
+                        name: product.name,
+                        slug: product.slug,
+                        price: product.price,
+                        qty: 1,
+                        image: product.images![0]
+                      }}
+                    />
                   </div>
                 )}
 

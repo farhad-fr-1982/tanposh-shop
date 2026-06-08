@@ -1,3 +1,6 @@
+import { z } from 'zod';
+import { insertCartSchema, cartItemSchema } from "@/lib/validators";
+
 export interface Product {
   id: string;
   name: string;
@@ -19,3 +22,6 @@ export function formatNumberWithDecimal(num: number): string {
   const [int, decimal] = num.toString().split('.');
   return decimal ? `${int}.${decimal.padEnd(2, '0')}` : `${int}.00`;
 }
+
+export type Cart = z.infer<typeof insertCartSchema>;
+export type CartItem = z.infer<typeof cartItemSchema>;
