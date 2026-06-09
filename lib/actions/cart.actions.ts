@@ -217,3 +217,76 @@ export async function removeItemFromCart(productId: string) {
         }
     }
 }
+
+// lib/actions/cart.actions.ts
+
+// بروزرسانی تعداد آیتم در سبد خرید
+export async function updateCartItemQty(productId: string, qty: number) {
+    try {
+        const sessionCartId = (await cookies()).get('sessionCartId')?.value
+        if (!sessionCartId) {
+            throw new Error('سبد خرید یافت نشد')
+        }
+
+        const cart = await getMyCart()
+        if (!cart) {
+            throw new Error('سبد خرید یافت نشد')
+        }
+
+        const product = await prisma.product.findFirst({
+            where: { id: productId }
+        })
+
+        if (!product) {
+            throw new Error('محصول یافت نشد')
+        }
+
+        // بررسی موجودی انبار
+        if (qty > product.stock) {
+            throw new Error(`تنها ${product.stock} عدد از این محصول موجود است`)
+        }
+
+        if (qty < 1) {
+            // اگه تعداد کمتر از 1 شد، محصول رو حذف کن
+            return await removeItemFromCart(productId)
+        }
+
+        const cartItems = (cart.items as CartItem[]).map((item) =>
+            item.productId === productId ? { ...item, qty: qty } : item
+        )
+
+        const { itemsPrice, shippingPrice, taxPrice, totalPrice } = calcPrice(cartItems)
+
+        const updatedCart = await prisma.cart.update({
+            where: { id: cart.id },
+            data: {
+                items: cartItems,
+                itemsPrice: itemsPrice,
+                totalPrice: totalPrice,
+                shippingPrice: shippingPrice,
+                taxPrice: taxPrice,
+            }
+        })
+
+        revalidatePath('/cart')
+
+        return {
+            success: true,
+            message: 'تعداد محصول بروزرسانی شد',
+            cart: convertToPlainObject({
+                ...updatedCart,
+                items: updatedCart.items as CartItem[],
+                itemsPrice: updatedCart.itemsPrice.toString(),
+                totalPrice: updatedCart.totalPrice.toString(),
+                shippingPrice: updatedCart.shippingPrice.toString(),
+                taxPrice: updatedCart.taxPrice.toString(),
+            })
+        }
+
+    } catch (error) {
+        return {
+            success: false,
+            message: formatError(error)
+        }
+    }
+}

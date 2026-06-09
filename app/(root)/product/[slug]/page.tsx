@@ -6,6 +6,9 @@ import { notFound } from 'next/navigation';
 import ProductPrice from '@/components/shared/product/product-price';
 import ProductImages from '@/components/shared/header/product-images';
 import AddToCart from '@/components/shared/product/add-to-cart';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { getMyCart } from '@/lib/actions/cart.actions';
 
 const ProductDetailsPage = async (props: {
   params: Promise<{ slug: string }>;
@@ -17,9 +20,21 @@ const ProductDetailsPage = async (props: {
   console.log("Slug از مرورگر:", slug, "محصول پیدا شده در دیتابیس:", product);
   if (!product) notFound();
 
+  const cart = await getMyCart()
+
   return (
     <>
-      <section className='p-5' dir='rtl'>
+      {/* دکمه بازگشت به صفحه اصلی */}
+      <div className='p-5 pb-0' dir='rtl'>
+        <Button asChild variant='outline' className='mb-4'>
+          <Link href='/'>
+            <ArrowRight className='w-4 h-4 ml-2' />
+            بازگشت به صفحه اصلی
+          </Link>
+        </Button>
+      </div>
+
+      <section className='p-5 pt-0' dir='rtl'>
         <div className='grid grid-cols-1 md:grid-cols-5 gap-6'>
 
           {/* ستون اول: تصاویر محصول (اشغال ۲ ستون از ۵ ستون) */}
@@ -74,7 +89,8 @@ const ProductDetailsPage = async (props: {
                 {/* دکمه افزودن به سبد خرید */}
                 {product.stock > 0 && (
                   <div className='pt-2'>
-                    <AddToCart
+                    <AddToCart 
+                    cart={cart}
                       item={{
                         productId: product.id,
                         name: product.name,
