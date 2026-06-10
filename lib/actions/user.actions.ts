@@ -6,7 +6,7 @@ import { isRedirectError } from "next/dist/client/components/redirect"
 import { hashSync } from "bcrypt-ts-edge"
 import { prisma } from "@/db/prisma"
 import { redirect } from "next/navigation"
-import { formatError } from "../utils" 
+import { formatError } from "../utils"
 
 export async function signInWithCredentials(prevState: unknown, formData: FormData) {
     try {
@@ -50,7 +50,7 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
         const plainPassword = user.password
 
         user.password = hashSync(user.password, 10)
-        
+
         await prisma.user.create({
             data: {
                 name: user.name,
@@ -67,12 +67,20 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
 
         // ✅ بعد از لاگین موفق، ریدایرکت کن
         redirect('/')
-        
+
     } catch (error) {
         if (isRedirectError(error)) {
             throw error
         }
 
-        return { success: false, message: formatError(error)}
+        return { success: false, message: formatError(error) }
     }
+}
+
+export async function getUserById(userId: string) {
+    const user = await prisma.user.findFirst({
+        where: { id: userId }
+    })
+    if (!user) throw new Error('کاربری یافت نشد')
+    return user
 }

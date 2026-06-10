@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertCartSchema, cartItemSchema } from "@/lib/validators";
+import { insertCartSchema, cartItemSchema ,shippingAddressSchema} from "@/lib/validators";
 
 export interface Product {
   id: string;
@@ -25,3 +25,4 @@ export function formatNumberWithDecimal(num: number): string {
 
 export type Cart = z.infer<typeof insertCartSchema>;
 export type CartItem = z.infer<typeof cartItemSchema>;
+export type ShippingAddress = z.infer<typeof shippingAddressSchema>;

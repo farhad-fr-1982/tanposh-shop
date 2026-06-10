@@ -40,3 +40,30 @@ export function round2(value: number | string): number {
     return 0
   }
 }
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('fa-IR', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price) + ' تومان'
+}
+
+// فرمت قیمت با استفاده از فرمت‌کننده بالا
+export function formatCurrency(amount: number | string | null) {
+  if (typeof amount === 'number') {
+    return new Intl.NumberFormat('fa-IR', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount) + ' تومان'
+  } else if (typeof amount === 'string') {
+    return new Intl.NumberFormat('fa-IR', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(Number(amount)) + ' تومان'
+  } else {
+    return '۰ تومان'
+  }
+}

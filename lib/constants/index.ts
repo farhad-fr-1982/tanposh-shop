@@ -14,3 +14,10 @@ export const SignUpDefaultValues = {
     password: '',
     confirmPassword: ''
 }
+
+export const shippingaddressDefaultValues ={
+    fullName:'farhad rezazadeh',
+    streetAddress:'123 خیابان شریعتی',
+    postalCode:'1234567890'
+
+}

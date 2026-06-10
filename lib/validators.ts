@@ -57,3 +57,14 @@ export const insertCartSchema = z.object({
     sessionCartId: z.string().min(1, 'شناسه جلسه سبد خرید الزامی است'),
     userId: z.string().optional().nullable(),
 });
+
+// Schema برای آدرس حمل و نقل
+export const shippingAddressSchema = z.object({
+    fullName: z.string().min(3, 'نام کامل باید حداقل ۳ کاراکتر باشد'),
+    streetAddress: z.string().min(3, 'آدرس باید حداقل ۳ کاراکتر باشد'),
+    city: z.string().min(3, 'شهر باید حداقل ۳ کاراکتر باشد'),
+    postalCode: z.string().min(3, 'کد پستی باید حداقل ۳ کاراکتر باشد'),
+    country: z.string().min(3, 'کشور باید حداقل ۳ کاراکتر باشد'),
+    lat: z.number().optional(),
+    lng: z.number().optional(),
+})
