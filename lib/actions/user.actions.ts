@@ -1,12 +1,13 @@
 'use server'
 
-import { signInFormSchema, signIUpFormSchema } from "../validators"
-import { signIn, signOut } from "@/auth"
+import { shippingAddressSchema, signInFormSchema, signIUpFormSchema } from "../validators"
+import { auth, signIn, signOut } from "@/auth"
 import { isRedirectError } from "next/dist/client/components/redirect"
 import { hashSync } from "bcrypt-ts-edge"
 import { prisma } from "@/db/prisma"
 import { redirect } from "next/navigation"
 import { formatError } from "../utils"
+import { ShippingAddress } from "@/types"
 
 export async function signInWithCredentials(prevState: unknown, formData: FormData) {
     try {
@@ -83,4 +84,35 @@ export async function getUserById(userId: string) {
     })
     if (!user) throw new Error('کاربری یافت نشد')
     return user
+}
+
+//*Update users address
+export async function updateUserAddress(data: ShippingAddress) {
+    try {
+        const session = await auth()
+
+        if (!session?.user?.id) {
+            throw new Error('کاربر یافت نشد')
+        }
+
+        const currentUser = await prisma.user.findFirst({
+            where: { id: session.user.id }
+        })
+
+        if (!currentUser) throw new Error('کاربر یافت نشد')
+
+        const user = shippingAddressSchema.parse(data)
+
+        await prisma.user.update({
+            where: { id: currentUser.id },
+            data: { address: user }  // ✅ درست: address: user
+        })
+        
+        return {
+            success: true,
+            message: 'آدرس با موفقیت بروزرسانی شد'
+        }
+    } catch (error) {
+        return { success: false, message: formatError(error) }
+    }
 }

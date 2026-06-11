@@ -7,11 +7,13 @@ import { toast } from 'sonner'
 import { useTransition } from 'react'
 import { shippingAddressSchema } from '@/lib/validators'
 import { z } from 'zod'
-import { useForm } from 'react-hook-form'
+import { useForm, SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { updateUserAddress } from '@/lib/actions/user.actions'
+import { shippingaddressDefaultValues } from '@/lib/constants'
 
 const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
     const router = useRouter()
@@ -19,20 +21,20 @@ const ShippingAddressForm = ({ address }: { address: ShippingAddress }) => {
 
     const form = useForm<z.infer<typeof shippingAddressSchema>>({
         resolver: zodResolver(shippingAddressSchema),
-        defaultValues: {
-            fullName: address?.fullName || '',
-            streetAddress: address?.streetAddress || '',
-            city: address?.city || '',
-            postalCode: address?.postalCode || '',
-            country: address?.country || 'ایران',
-        },
+        defaultValues: address || shippingaddressDefaultValues
     })
 
-    const onSubmit = (data: z.infer<typeof shippingAddressSchema>) => {
+    const onSubmit: SubmitHandler<z.infer<typeof shippingAddressSchema>> = async (values) => {
         startTransition(async () => {
-            console.log('آدرس:', data)
+            const res = await updateUserAddress(values);
+
+            if (!res.success) {
+                toast.error(res.message)
+                return
+            }
+
             toast.success('آدرس حمل و نقل ذخیره شد')
-            router.push('/payment')
+            router.push('/payment-method')
         })
     }
 
