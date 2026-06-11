@@ -14,7 +14,7 @@ export const config = {
     },
     session: {
         strategy: 'jwt' as const,
-        maxAge: 60 * 60 * 24 * 30, // 30 days
+        maxAge: 60 * 60 * 24 * 30,
     },
     adapter: PrismaAdapter(prisma),
     secret: process.env.NEXTAUTH_SECRET,
@@ -54,12 +54,10 @@ export const config = {
     ],
     callbacks: {
         async jwt({ token, user, trigger, session }: any) {
-            // ۱. در اولین لاگین، اطلاعات کاربر را به توکن منتقل می‌کنیم
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
 
-                // بررسی نام و آپدیت آن در دیتابیس در صورت نیاز
                 if (user.name === 'No_NAME' && user.email) {
                     token.name = user.email.split('@')[0];
                     await prisma.user.update({
@@ -69,15 +67,47 @@ export const config = {
                 }
             }
 
-            // ۲. مدیریت آپدیت سشن (زمانی که با ()update در فرانت‌اند صدا زده می‌شود)
             if (trigger === 'update' && session?.name) {
                 token.name = session.name;
+            }
+
+            if (trigger === 'signIn' || trigger === 'signUp') {
+                const cookiesObject = await cookies();
+                const sessionCartId = cookiesObject.get('sessionCartId')?.value;
+
+                if (sessionCartId && token.id) {
+                    await prisma.cart.deleteMany({
+                        where: { userId: token.id }
+                    });
+
+                    const sessionCart = await prisma.cart.findFirst({
+                        where: { sessionCartId }
+                    });
+
+                    if (sessionCart) {
+                        await prisma.cart.update({
+                            where: { id: sessionCart.id },
+                            data: { userId: token.id }
+                        });
+                    } else {
+                        await prisma.cart.create({
+                            data: {
+                                sessionCartId: sessionCartId,
+                                userId: token.id,
+                                items: [],
+                                itemsPrice: 0,
+                                totalPrice: 0,
+                                shippingPrice: 0,
+                                taxPrice: 0,
+                            }
+                        });
+                    }
+                }
             }
 
             return token;
         },
         async session({ session, token }: any) {
-            // انتقال اطلاعات از توکن به سشن برای دسترسی در فرانت‌اند
             if (session.user && token) {
                 session.user.id = token.id || token.sub;
                 session.user.role = token.role;
@@ -85,29 +115,42 @@ export const config = {
             }
             return session;
         },
-        authorized({ request, auth }: any) {
+        async authorized({ request, auth }: any) {
+            // Array of regex patterns of paths we want to protect
+            const protectedPaths = [
+                /\/shipping-address/,
+                /\/payment-method/,
+                /\/place-order/,
+                /\/profile/,
+                /\/user\/(.*)/,
+                /\/order\/(.*)/,
+                /\/admin/,
+            ];
+
+            // Get pathname from the req URL object
+            const { pathname } = request.nextUrl;
+
+            // Check if user is not authenticated and accessing a protected path
+            if (!auth && protectedPaths.some((p) => p.test(pathname))) {
+                return false;
+            }
+
             // اگر کوکی sessionCartId وجود نداشت
             if (!request.cookies.get('sessionCartId')) {
-                // یه شناسه یکتا جدید بساز
-                const sessionCartId = crypto.randomUUID()
+                const sessionCartId = crypto.randomUUID();
+                const response = NextResponse.next();
 
-                // یه پاسخ جدید بساز
-                const response = NextResponse.next()
-
-                // کوکی رو به response اضافه کن
                 response.cookies.set('sessionCartId', sessionCartId, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
-                    maxAge: 60 * 60 * 24 * 30 // 30 روز
-                })
+                    maxAge: 60 * 60 * 24 * 30
+                });
 
-                // ✅ مهم: پاسخ رو برگردون
-                return response
+                return response;
             }
 
-            // اگه کوکی وجود داشت، اجازه بده ادامه بده
-            return true
+            return true;
         }
     }
 } satisfies NextAuthConfig;

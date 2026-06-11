@@ -10,7 +10,7 @@ const CheckoutSteps = ({ current = 0 }) => {
             {step}
           </div>
           {step != 'ثبت سفارش' && (
-            <hr className='w-16 border-t border-gray-300 mx-2'/>
+            <hr className='w-16 border-t border-gray-600 mx-2'/>
           )}
         </React.Fragment>
       ))}
