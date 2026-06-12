@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PAYMENT_METHODS } from './constants';
 
 // قیمت با دو رقم اعشار
 const currency = z.string().refine(
@@ -68,3 +69,13 @@ export const shippingAddressSchema = z.object({
     lat: z.number().optional(),
     lng: z.number().optional(),
 })
+
+// Schema برای روش پرداخت
+export const paymentMethodSchema = z
+  .object({
+    type: z.string().min(1, 'روش پرداخت الزامی است'),
+  })
+  .refine((data) => PAYMENT_METHODS.includes(data.type), {
+    path: ['type'],
+    message: 'روش پرداخت نامعتبر است',
+  });
