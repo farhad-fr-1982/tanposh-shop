@@ -13,21 +13,79 @@ const pool = new Pool({ connectionString });
 // Instantiates the Prisma adapter using the Neon connection pool to handle the connection between Prisma and Neon.
 const adapter = new PrismaNeon(pool);
 
-// Extends the PrismaClient with a custom result transformer to convert the price and rating fields.
+// Extends the PrismaClient with a custom result transformer to convert the price and rate to a new PrismaClient({ adapter }).$extends({
 export const prisma = new PrismaClient({ adapter }).$extends({
   result: {
     product: {
       price: {
         compute(product) {
-          // تبدیل price به string (اختیاری، بسته به نیاز UI)
           return product.price.toString();
         },
       },
       rating: {
-        // اینجا rating که از نوع Decimal است را به number تبدیل می‌کنیم
         needs: { rating: true },
         compute(product) {
-          return product.rating.toNumber();
+          return product.rating.toString();
+        },
+      },
+    },
+    cart: {
+      itemsPrice: {
+        needs: { itemsPrice: true },
+        compute(cart) {
+          return cart.itemsPrice.toString();
+        },
+      },
+      shippingPrice: {
+        needs: { shippingPrice: true },
+        compute(cart) {
+          return cart.shippingPrice.toString();
+        },
+      },
+      taxPrice: {
+        needs: { taxPrice: true },
+        compute(cart) {
+          return cart.taxPrice.toString();
+        },
+      },
+      totalPrice: {
+        needs: { totalPrice: true },
+        compute(cart) {
+          return cart.totalPrice.toString();
+        },
+      },
+    },
+    order: {
+      itemsPrice: {
+        needs: { itemsPrice: true },
+        compute(order) {
+          return order.itemsPrice.toString();
+        },
+      },
+      shippingPrice: {
+        needs: { shippingPrice: true },
+        compute(order) {
+          return order.shippingPrice.toString();
+        },
+      },
+      taxPrice: {
+        needs: { taxPrice: true },
+        compute(order) {
+          return order.taxPrice.toString();
+        },
+      },
+      totalPrice: {
+        needs: { totalPrice: true },
+        compute(order) {
+          return order.totalPrice.toString();
+        },
+      },
+    },
+    orderItem: {
+      price: {
+        needs: { price: true },
+        compute(orderItem) {
+          return orderItem.price.toString();
         },
       },
     },

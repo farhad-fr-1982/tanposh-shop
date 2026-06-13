@@ -67,3 +67,54 @@ export function formatCurrency(amount: number | string | null) {
     return '۰ تومان'
   }
 }
+
+// Shorten UUID
+export function formatId(id: string) {
+    return `${id.substring(id.length - 6)}`;
+}
+
+// Format date and times
+export const formatDateTime = (dateString: Date) => {
+    const dateTimeOptions: Intl.DateTimeFormatOptions = {
+        month: 'long',     // نام کامل ماه (مهر)
+        year: 'numeric',   // سال (۱۴۰۳)
+        day: 'numeric',    // روز (۲۵)
+        hour: 'numeric',   // ساعت (۸)
+        minute: 'numeric', // دقیقه (۳۰)
+        hour12: true,      // استفاده از ساعت ۱۲ ساعته
+    };
+    
+    const dateOptions: Intl.DateTimeFormatOptions = {
+        weekday: 'long',   // نام کامل روز (دوشنبه)
+        month: 'long',     // نام کامل ماه (مهر)
+        year: 'numeric',   // سال (۱۴۰۳)
+        day: 'numeric',    // روز (۲۵)
+    };
+    
+    const timeOptions: Intl.DateTimeFormatOptions = {
+        hour: 'numeric',   // ساعت (۸)
+        minute: 'numeric', // دقیقه (۳۰)
+        hour12: true,      // استفاده از ساعت ۱۲ ساعته
+    };
+
+    const formattedDateTime: string = new Date(dateString).toLocaleString(
+        'fa-IR',  // ✅ تغییر به فارسی
+        dateTimeOptions
+    );
+
+    const formattedDate: string = new Date(dateString).toLocaleString(
+        'fa-IR',  // ✅ تغییر به فارسی
+        dateOptions
+    );
+
+    const formattedTime: string = new Date(dateString).toLocaleString(
+        'fa-IR',  // ✅ تغییر به فارسی
+        timeOptions
+    );
+
+    return {
+        dateTime: formattedDateTime,
+        dateOnly: formattedDate,
+        timeOnly: formattedTime,
+    };
+};

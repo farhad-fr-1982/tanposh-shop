@@ -46,10 +46,10 @@ model User {
   paymentMethod String?
   createdAt     DateTime  @default(now()) @db.Timestamp(6)
   updatedAt     DateTime  @updatedAt
-  accont        Account[]
-  session       Session[]
-  Cart          Cart[]
-  orders        Order[]  
+  accounts      Account[]  
+  sessions      Session[]  
+  carts         Cart[]
+  orders        Order[]
 }
 
 model Account {
@@ -119,7 +119,7 @@ model Order {
   deliveredAt     DateTime? @db.Timestamp(6)
   createdAt       DateTime  @default(now()) @db.Timestamp(6)
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items           OrderItem[]
+  orderItems      OrderItem[]
 }
 
 model OrderItem {

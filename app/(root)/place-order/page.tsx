@@ -1,6 +1,3 @@
-import React from 'react'
-import { Metadata } from 'next'
-import Link from 'next/link'
 import { getMyCart } from '@/lib/actions/cart.actions'
 import { auth } from '@/auth'
 import { getUserById } from '@/lib/actions/user.actions'
@@ -9,10 +6,11 @@ import { ShippingAddress } from '@/types'
 import CheckoutSteps from '@/components/shared/checkout-steps'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import PlaceOrderForm from './place-order-form'
 
-export const metadata: Metadata = {
-    title: 'ثبت سفارش'
+export const metadata = {
+    title: 'ثبت سفارش',
 }
 
 const PlaceOrderPage = async () => {
@@ -20,25 +18,12 @@ const PlaceOrderPage = async () => {
     const session = await auth()
     const userId = session?.user?.id
 
-    if (!userId) {
-        redirect('/sign-in')
-    }
+    if (!userId) redirect('/sign-in')
+    if (!cart || cart.items.length === 0) redirect('/cart')
 
     const user = await getUserById(userId)
-
-    if (!cart || cart.items.length === 0) {
-        redirect('/cart')
-    }
-
-    // اگر آدرس وجود نداشت، به صفحه آدرس هدایت کن
-    if (!user.address) {
-        redirect('/shipping-address')
-    }
-
-    // اگر روش پرداخت وجود نداشت، به صفحه پرداخت هدایت کن
-    if (!user.paymentMethod) {
-        redirect('/payment-method')
-    }
+    if (!user.address) redirect('/shipping-address')
+    if (!user.paymentMethod) redirect('/payment-method')
 
     const userAddress = user.address as ShippingAddress
     const paymentMethod = user.paymentMethod
@@ -47,10 +32,11 @@ const PlaceOrderPage = async () => {
         <>
             <CheckoutSteps current={3} />
             <div className='max-w-6xl mx-auto p-5'>
+                <h1 className='py-4 text-2xl font-bold'>ثبت سفارش</h1>
+                
                 <div className='grid md:grid-cols-3 md:gap-5'>
-                    
-                    {/* ستون سمت راست - اطلاعات اصلی */}
-                    <div className='md:col-span-2 overflow-x-auto space-y-4'>
+                    {/* ستون راست - اطلاعات */}
+                    <div className='md:col-span-2 space-y-4'>
                         
                         {/* آدرس ارسال */}
                         <Card>
@@ -61,10 +47,10 @@ const PlaceOrderPage = async () => {
                                         <Link href='/shipping-address'>ویرایش</Link>
                                     </Button>
                                 </div>
-                                <div className='space-y-1 mt-2'>
-                                    <p className='font-medium'>{userAddress.fullName}</p>
+                                <div className='mt-2 space-y-1'>
+                                    <p>{userAddress.fullName}</p>
                                     <p>{userAddress.streetAddress}</p>
-                                    <p>{userAddress.city}, {userAddress.postalCode}</p>
+                                    <p>{userAddress.city} {userAddress.postalCode}</p>
                                     <p>{userAddress.country}</p>
                                 </div>
                             </CardContent>
@@ -79,16 +65,16 @@ const PlaceOrderPage = async () => {
                                         <Link href='/payment-method'>ویرایش</Link>
                                     </Button>
                                 </div>
-                                <div className='mt-2'>
-                                    <p>{paymentMethod === 'Zibal' ? 'پرداخت آنلاین (زیبال)' : 'پرداخت در محل'}</p>
-                                </div>
+                                <p className='mt-2'>
+                                    {paymentMethod === 'Zibal' ? 'پرداخت آنلاین (زیبال)' : 'پرداخت در محل'}
+                                </p>
                             </CardContent>
                         </Card>
 
-                        {/* سفارشات */}
+                        {/* محصولات */}
                         <Card>
                             <CardContent className='p-4'>
-                                <h2 className='text-xl font-semibold pb-4'>سفارشات</h2>
+                                <h2 className='text-xl font-semibold pb-4'>محصولات</h2>
                                 <div className='overflow-x-auto'>
                                     <table className='w-full'>
                                         <thead>
@@ -113,7 +99,7 @@ const PlaceOrderPage = async () => {
                         </Card>
                     </div>
 
-                    {/* ستون چپ - خلاصه سفارش */}
+                    {/* ستون چپ - خلاصه */}
                     <div className='md:col-span-1'>
                         <Card>
                             <CardContent className='p-4'>
