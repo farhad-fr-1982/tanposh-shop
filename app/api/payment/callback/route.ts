@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     console.log('📥 Callback received:', { trackId, success });
 
     if (!trackId) {
-        return new NextResponse('Track ID missing', { status: 400 });
+        return NextResponse.redirect(new URL('/payment/result?success=false&message=Track ID missing', req.url));
     }
 
     // دریافت کاربر لاگین شده
@@ -20,35 +20,32 @@ export async function GET(req: NextRequest) {
     const userId = session?.user?.id;
 
     if (!userId) {
-        return new NextResponse('User not authenticated', { status: 401 });
+        return NextResponse.redirect(new URL('/payment/result?success=false&message=User not authenticated', req.url));
     }
 
-    // پیدا کردن سفارش بر اساس userId و trackId ذخیره شده در paymentResult
+    // پیدا کردن سفارش بر اساس userId و trackId
     const order = await prisma.order.findFirst({
         where: {
             zibalTrackId: String(trackId),
             userId: userId,
-            paymentResult: {
-                path: ['trackId'],
-                equals: trackId,
-            },
         },
     });
 
     if (!order) {
-        console.error('❌ Order not found for trackId:', trackId);
-        return new NextResponse('Order not found', { status: 404 });
+        return NextResponse.redirect(new URL(`/payment/result?success=false&message=Order not found`, req.url));
     }
 
     if (success === '0') {
-        return NextResponse.redirect(new URL(`/order/${order.id}?payment=failed`, req.url));
+        return NextResponse.redirect(new URL(`/payment/result?success=false&orderId=${order.id}`, req.url));
     }
 
     const result = await captureZibalPayment(trackId, order.id);
 
     if (result.success) {
-        return NextResponse.redirect(new URL(`/order/${order.id}`, req.url));
+        // ✅ هدایت به صفحه نتیجه با موفقیت
+        return NextResponse.redirect(new URL(`/payment/result?success=true&orderId=${order.id}`, req.url));
     } else {
-        return NextResponse.redirect(new URL(`/order/${order.id}?payment=failed`, req.url));
+        // ❌ هدایت به صفحه نتیجه با خطا
+        return NextResponse.redirect(new URL(`/payment/result?success=false&orderId=${order.id}`, req.url));
     }
 }
