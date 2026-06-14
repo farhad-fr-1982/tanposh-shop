@@ -228,8 +228,9 @@ export async function createZibalOrder(orderId: string) {
     await prisma.order.update({
       where: { id: orderId },
       data: {
+        zibalTrackId: String(zibalOrder.trackId), // ← تبدیل به String
         paymentResult: {
-          trackId: zibalOrder.trackId,
+          trackId: String(zibalOrder.trackId),    // ← تبدیل به String
           result: 0,
           amount: amountInTomans,
           status: 'PENDING',
