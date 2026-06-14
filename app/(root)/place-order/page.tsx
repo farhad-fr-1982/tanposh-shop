@@ -27,6 +27,7 @@ const PlaceOrderPage = async () => {
 
     const userAddress = user.address as ShippingAddress
     const paymentMethod = user.paymentMethod
+    
 
     return (
         <>

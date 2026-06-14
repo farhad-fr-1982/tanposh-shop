@@ -1,64 +1,122 @@
 // lib/zibal.ts
 const base = 'https://gateway.zibal.ir/v1';
 
-export const zibal = {};
+const getMerchantId = () => {
+  const merchant = process.env.ZIBAL_MERCHANT_ID;
+  console.log('🔍 Merchant ID from env:', merchant); // 👈 این خط را اضافه کنید
+  if (!merchant) throw new Error('ZIBAL_MERCHANT_ID is not defined');
+  return merchant;
+};
 
-// درخواست پرداخت به زیبال (بدون نیاز به توکن)
-async function requestPayment(amount: number, description: string) {
-    const { ZIBAL_MERCHANT_ID, ZIBAL_CALLBACK_URL } = process.env;
+const getCallbackUrl = () => {
+  const url = process.env.ZIBAL_CALLBACK_URL;
+  if (!url) throw new Error('ZIBAL_CALLBACK_URL is not defined');
+  return url;
+};
+
+export const zibal = {
+  // ایجاد درخواست پرداخت (معادل createOrder PayPal)
+  createOrder: async function createOrder(amount: number, description: string, customCallbackUrl?: string) {
+    const merchantId = getMerchantId();
+    const callbackUrl = customCallbackUrl || getCallbackUrl();
 
     const response = await fetch(`${base}/request`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            merchant: ZIBAL_MERCHANT_ID,
-            amount: amount,
-            callbackUrl: ZIBAL_CALLBACK_URL,
-            description: description,
-        }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        merchant: merchantId,
+        amount: amount,
+        callbackUrl: callbackUrl,
+        description: description,
+      }),
     });
 
-    if (response.ok) {
-        const jsonData = await response.json();
-        if (jsonData.result === 100) {
-            return { success: true, trackId: jsonData.trackId };
-        } else {
-            throw new Error(`خطا در درخواست پرداخت: ${jsonData.result}`);
-        }
-    } else {
-        const errorMessage = await response.text();
-        throw new Error(`خطا در ارتباط با درگاه: ${errorMessage}`);
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`خطا در ارتباط با درگاه Zibal: ${errorMessage}`);
     }
-}
 
-// تایید پرداخت
-async function verifyPayment(trackId: string) {
-    const { ZIBAL_MERCHANT_ID } = process.env;
+    const data = await response.json();
+
+    if (data.result === 100) {
+      return {
+        id: data.trackId,
+        trackId: data.trackId,
+        status: 'CREATED',
+        approvalUrl: `https://gateway.zibal.ir/start/${data.trackId}`,
+      };
+    } else {
+      throw new Error(`خطا در درخواست پرداخت Zibal: ${data.result}`);
+    }
+  },
+
+  // دریافت اطلاعات تراکنش (معادل getOrder PayPal)
+  getOrder: async function getOrder(trackId: string) {
+    const merchantId = getMerchantId();
 
     const response = await fetch(`${base}/verify`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            merchant: ZIBAL_MERCHANT_ID,
-            trackId: trackId,
-        }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        merchant: merchantId,
+        trackId: trackId,
+      }),
     });
 
-    if (response.ok) {
-        const jsonData = await response.json();
-        if (jsonData.result === 100) {
-            return { success: true, message: 'پرداخت موفق', amount: jsonData.amount };
-        } else {
-            return { success: false, message: `پرداخت ناموفق: ${jsonData.result}` };
-        }
-    } else {
-        const errorMessage = await response.text();
-        throw new Error(`خطا در تایید پرداخت: ${errorMessage}`);
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`خطا در دریافت اطلاعات تراکنش Zibal: ${errorMessage}`);
     }
-}
 
-export { requestPayment, verifyPayment };
+    const data = await response.json();
+
+    return {
+      trackId: trackId,
+      status: data.result === 100 ? 'COMPLETED' : 'PENDING',
+      result: data.result,
+      amount: data.amount,
+      cardNumber: data.cardNumber,
+    };
+  },
+
+  // تایید و نهایی کردن پرداخت (معادل captureOrder PayPal)
+  captureOrder: async function captureOrder(trackId: string) {
+    const merchantId = getMerchantId();
+
+    const response = await fetch(`${base}/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        merchant: merchantId,
+        trackId: trackId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`خطا در تایید پرداخت Zibal: ${errorMessage}`);
+    }
+
+    const data = await response.json();
+
+    if (data.result === 100) {
+      return {
+        success: true,
+        trackId: trackId,
+        amount: data.amount,
+        cardNumber: data.cardNumber,
+      };
+    }
+
+    return {
+      success: false,
+      result: data.result,
+      message: data.message || 'پرداخت ناموفق',
+    };
+  },
+};
+
+// توابع جداگانه برای استفاده ساده‌تر
+export const createZibalOrder = zibal.createOrder;
+export const getZibalOrder = zibal.getOrder;
+export const captureZibalOrder = zibal.captureOrder;

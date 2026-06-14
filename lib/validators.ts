@@ -3,8 +3,8 @@ import { PAYMENT_METHODS } from './constants';
 
 // قیمت با دو رقم اعشار
 const currency = z.string().refine(
-    (value) => /^\d+(\.\d{2})?$/.test(value),
-    'قیمت باید دقیقاً دو رقم اعشار داشته باشد'
+    (value) => /^\d+(\.\d{1,2})?$/.test(value), // یک یا دو رقم اعشار مجاز باشد
+    'قیمت باید یک عدد با حداکثر دو رقم اعشار باشد'
 )
 
 // طرح اعتبارسنجی محصول
@@ -101,4 +101,14 @@ export const insertOrderItemSchema = z.object({
     name: z.string(),
     price: currency,
     qty: z.number(),
+});
+
+// Schema برای نتیجه پرداخت Zibal
+export const zibalPaymentResultSchema = z.object({
+  trackId: z.string().min(1, 'Track ID is required'),
+  result: z.number(),
+  amount: z.number().positive('Amount must be positive'),
+  cardNumber: z.string().optional(),
+  message: z.string().optional(),
+  paidAt: z.date().optional(),
 });

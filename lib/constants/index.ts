@@ -20,7 +20,7 @@ export const shippingAddressDefaultValues = {
     streetAddress: '',
     city: '',
     postalCode: '',
-    country: '',
+    country: 'ایران',
 };
 
 export const PAYMENT_METHODS = process.env.PAYMENT_METHODS
